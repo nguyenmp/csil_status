@@ -13,7 +13,7 @@ public class Topper {
 
         // create a database connection
         Connection connection = DriverManager.getConnection("jdbc:sqlite:./csil_top.db");
-        initializeComputers(connection);
+        testComputers(connection);
     }
 
     public static void testComputers(Connection connection) throws SQLException, JSchException, IOException {
@@ -22,12 +22,11 @@ public class Topper {
 
         int i = 0;
         while (i++ < 341) computers.next();
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Computer (hostname, ip_address, is_active) VALUES (?, ?, ?)");
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Computer SET is_active=? WHERE ip_address=?");
         while (computers.next()) {
 
             String hostname = computers.getString("hostname");
             String ip_address = computers.getString("ip_address");
-            preparedStatement.setString(1, hostname);
             preparedStatement.setString(2, ip_address);
 
             try {
@@ -35,15 +34,15 @@ public class Topper {
                 Session session = jsch.getSession(Credentials.USERNAME, hostname);
                 session.setPassword(Credentials.PASSWORD);
                 session.setConfig("StrictHostKeyChecking", "no");
-                session.setTimeout(20000);
+                session.setTimeout(5000);
                 session.connect();
                 session.disconnect();
                 System.out.println("Connected to " + hostname + " at " + ip_address);
-                preparedStatement.setString(3, "true");
+                preparedStatement.setString(1, "true");
             } catch (JSchException e) {
                 System.out.println("Failed with " + hostname + " at " + ip_address);
                 e.printStackTrace();
-                preparedStatement.setString(3, "false");
+                preparedStatement.setString(1, "false");
             }
 
             preparedStatement.execute();
