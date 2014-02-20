@@ -1,0 +1,17 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+*.iml
+
+*~
+*.swp
+
+*.db
+
+.idea/
+
+!libs/*.jar
