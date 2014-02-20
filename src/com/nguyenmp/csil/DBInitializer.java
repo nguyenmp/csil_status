@@ -38,8 +38,6 @@ public class DBInitializer {
         Statement statement = connection.createStatement();
         ResultSet computers = statement.executeQuery("SELECT * FROM Computer WHERE is_active = \'\'");
 
-        int i = 0;
-        while (i++ < 341) computers.next();
         PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Computer SET is_active=? WHERE ip_address=?");
         while (computers.next()) {
 
@@ -67,7 +65,7 @@ public class DBInitializer {
                 preparedStatement.setString(1, "false");
             }
 
-            boolean result = preparedStatement.execute();
+            preparedStatement.execute();
         }
     }
 
@@ -106,7 +104,7 @@ public class DBInitializer {
 
             String[] lines = line.split("\n");
             for (String resultRow : lines) {
-                if (resultRow.startsWith("128.111") && !resultRow.contains(" ")) {
+                if (resultRow.startsWith("128.111.43") && !resultRow.contains(" ")) {
                     String[] parts = resultRow.split("\t");
                     String ip_address = parts[0];
                     String hostname = parts[1];

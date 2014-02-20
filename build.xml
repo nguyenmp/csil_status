@@ -29,7 +29,15 @@
 
 
   <target name="init" depends="compile" description="initializes the DB with host file ip addresses and tests each ip address for connectivity" >
-      <java classname="${packageName}.DBInitializer">
+    <java classname="${packageName}.DBInitializer" >
+        <arg value="./csil.db" />
+        <classpath refid="project.class.path" />
+    </java>
+  </target>
+
+
+  <target name="initECE" depends="compile" description="initializes the DB with host file ip addresses and tests each ip address for connectivity" >
+    <java classname="${packageName}.DBInitializerECE" >
         <arg value="./csil.db" />
         <classpath refid="project.class.path" />
     </java>
