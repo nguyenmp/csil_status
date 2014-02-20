@@ -15,3 +15,4 @@
 .idea/
 
 !libs/*.jar
+src/com/nguyenmp/csil/Credentials.java
