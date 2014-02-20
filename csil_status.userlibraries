@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<eclipse-userlibraries>
-  <library name="libs">
-    <archive path="/home/mark/csil_status/libs/sqlite-jdbc-3.7.15-SNAPSHOT-javadoc.jar" />
-    <archive path="/home/mark/csil_status/libs/jsch-0.1.50.jar" />
-  </library>
-  <library name="bin" />
-</eclipse-userlibraries>
-
