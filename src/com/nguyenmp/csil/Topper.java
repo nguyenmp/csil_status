@@ -1,9 +1,6 @@
 package com.nguyenmp.csil;
 
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
 import com.nguyenmp.csil.Credentials;
 
 import java.io.*;
@@ -80,51 +77,36 @@ public class Topper {
         session.setPassword(Credentials.PASSWORD);
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
-        Channel channel = session.openChannel("shell");
+        ChannelExec channel = (ChannelExec) session.openChannel("exec");
+        channel.setCommand("cat  /etc/hosts");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
 
         channel.connect();
 
-        PrintWriter writr = new PrintWriter(channel.getOutputStream());
-        writr.println();
-        writr.flush();
+        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Computer (hostname, ip_address, is_active) VALUES (?, ?, \'\')");
 
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("-bash-4.2")) {
-                writr.println("cat /etc/hosts");
-                writr.println();
-                writr.flush();
 
-                PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Computer (hostname, ip_address, is_active) VALUES (?, ?, \'\')");
+            connection.setAutoCommit(false);
+            String[] lines = line.split("\n");
+            for (String resultRow : lines) {
+                if (resultRow.startsWith("128.111") && !resultRow.contains(" ")) {
+                    String[] parts = resultRow.split("\t");
+                    String ip_address = parts[0];
+                    String hostname = parts[1];
+                    preparedStatement.setString(1, hostname);
+                    preparedStatement.setString(2, ip_address);
+                    preparedStatement.execute();
 
-                reader.read();
-                StringBuilder string = new StringBuilder();
-                while ((line = reader.readLine()) != null && !line.startsWith("-bash-4.2")) {
-                    string.append(line);
-                    string.append('\n');
+                    System.out.println(ip_address);
                 }
-
-                connection.setAutoCommit(false);
-                String[] lines = string.toString().split("\n");
-                for (String resultRow : lines) {
-                    if (resultRow.startsWith("128.111") && !resultRow.contains(" ")) {
-                        String[] parts = resultRow.split("\t");
-                        String ip_address = parts[0];
-                        String hostname = parts[1];
-                        preparedStatement.setString(1, hostname);
-                        preparedStatement.setString(2, ip_address);
-                        preparedStatement.execute();
-
-                        System.out.println(ip_address);
-                    }
-                }
-                connection.commit();
-                System.out.println("Done Writing.");
-
-                channel.disconnect();
             }
         }
+        connection.commit();
+        System.out.println("Done Writing.");
+
+        channel.disconnect();
     }
 }
