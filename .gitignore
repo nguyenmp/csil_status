@@ -12,6 +12,8 @@
 
 *.db
 
+out/
+build/
 .idea/
 
 !libs/*.jar
