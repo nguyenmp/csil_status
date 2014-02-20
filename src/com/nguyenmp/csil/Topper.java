@@ -21,12 +21,16 @@ public class Topper {
         ResultSet computers = statement.executeQuery("SELECT * FROM Computer WHERE is_active = \'\'");
 
         int i = 0;
-        while (i++ < 341) computers.next();
+        while (i++ < 316) computers.next();
         PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Computer SET is_active=? WHERE ip_address=?");
         while (computers.next()) {
 
             String hostname = computers.getString("hostname");
             String ip_address = computers.getString("ip_address");
+            String is_active = computers.getString("is_active");
+
+            if (is_active != null && !is_active.equals("")) continue;
+
             preparedStatement.setString(2, ip_address);
 
             try {
@@ -41,7 +45,7 @@ public class Topper {
                 preparedStatement.setString(1, "true");
             } catch (JSchException e) {
                 System.out.println("Failed with " + hostname + " at " + ip_address);
-                e.printStackTrace();
+                //e.printStackTrace();
                 preparedStatement.setString(1, "false");
             }
 
