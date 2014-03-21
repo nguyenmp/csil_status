@@ -37,8 +37,8 @@ public abstract class CommandExecutor implements Runnable {
      * </code></p>
      *
      * <p>Or you can run it through an executor.</p>
-     * @param hostname
-     * @param command
+     * @param hostname the hostname of the computer to connect to
+     * @param command the command to run or null to just connect and disconnect
      */
     CommandExecutor(String hostname, String command) {
         this.hostname = hostname;
