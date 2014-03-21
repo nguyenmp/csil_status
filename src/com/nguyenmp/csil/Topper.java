@@ -31,6 +31,11 @@ public class Topper {
         initializeComputers(database.computers);
 
         testComputers(database.computers);
+
+        List<Computer> activeComputers = database.computers.getActiveComputers();
+        for (Computer computer : activeComputers) System.out.println(computer);
+
+
     }
 
     private static void testComputers(ComputersDAO computersDAO) throws SQLException {
@@ -55,6 +60,7 @@ public class Topper {
 
     public static void initializeComputers(ComputersDAO computersDAO) throws JSchException, SQLException, IOException {
         initializeComputers(computersDAO, "csil.cs.ucsb.edu");
+        initializeComputers(computersDAO, "linux01.engr.ucsb.edu");
     }
 
     public static void initializeComputers(ComputersDAO computersDAO, String address) throws SQLException, JSchException, IOException {
@@ -75,7 +81,7 @@ public class Topper {
         while ((line = reader.readLine()) != null) {
             String[] lines = line.split("\n");
             for (String resultRow : lines) {
-                if (resultRow.startsWith("128.111.43") && !resultRow.contains(" ")) {
+                if ((resultRow.startsWith("128.111.43") || resultRow.contains("linux"))&& !resultRow.contains(" ")) {
                     String[] parts = resultRow.split("\t");
                     String ip_address = parts[0];
                     String hostname = parts[1];
