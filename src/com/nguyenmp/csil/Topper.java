@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Topper {
 
@@ -44,7 +45,12 @@ public class Topper {
             executor.execute(tester);
         }
 
-        executor.shutdown();
+        try {
+            executor.shutdown();
+            executor.awaitTermination(99999, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void initializeComputers(ComputersDAO computersDAO) throws JSchException, SQLException, IOException {

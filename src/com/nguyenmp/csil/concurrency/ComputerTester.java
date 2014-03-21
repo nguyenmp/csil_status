@@ -30,7 +30,6 @@ public class ComputerTester extends CommandExecutor {
 
     @Override
     public void onSuccess(String result) {
-        System.out.println(result);
         setActive(true);
     }
 
