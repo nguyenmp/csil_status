@@ -3,7 +3,6 @@
   <property environment="env"/> <!-- load the environment variables -->
   <property name="projectName" value="csil_status" />
   <property name="packageName" value="com.nguyenmp.csil" />
-  <property name="mainClass" value="${packageName}.Topper" />
   <path id="project.class.path">
     <pathelement location="build"/>
     <pathelement location="libs/jsch-0.1.50.jar"/>
@@ -21,28 +20,21 @@
 
 
 
-  <target name="run" depends="compile" description="runs the class ${mainClass}" >
-    <java classname="${mainClass}">
+  <target name="topper" depends="compile" description="runs the class Topper" >
+    <java classname="${packageName}.Topper">
       <classpath refid="project.class.path" />
         <arg value="./csil.db" />
     </java>
   </target>
 
 
-  <target name="init" depends="compile" description="initializes the DB with host file ip addresses and tests each ip address for connectivity" >
+  <target name="init" depends="compile" description="initializes the DB" >
     <java classname="${packageName}.DBInitializer" >
         <arg value="./csil.db" />
         <classpath refid="project.class.path" />
     </java>
   </target>
 
-
-  <target name="initECE" depends="compile" description="initializes the DB with host file ip addresses and tests each ip address for connectivity" >
-    <java classname="${packageName}.DBInitializerECE" >
-        <arg value="./csil.db" />
-        <classpath refid="project.class.path" />
-    </java>
-  </target>
 
   <target name="test" depends="compile" description="run junit tests">
 
