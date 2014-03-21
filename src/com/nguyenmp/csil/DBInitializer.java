@@ -4,85 +4,66 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.nguyenmp.csil.concurrency.ComputerTester;
+import com.nguyenmp.csil.daos.ComputersDAO;
+import com.nguyenmp.csil.daos.Database;
+import com.nguyenmp.csil.things.Computer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.*;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DBInitializer {
 
-    public static void main(String[] args) throws IOException, JSchException, ClassNotFoundException, SQLException {
-        if (args.length < 1) improperUsage();
-        String pathToFile = args[0];
-        String initialAddress = args.length < 2 ? "csil.cs.ucsb.edu" : args[2];
-
-
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, JSchException {
         Class.forName("org.sqlite.JDBC");
 
+        Database database = new Database();
+
         // create a database connection
-        Connection connection = DriverManager.getConnection("jdbc:sqlite:" + pathToFile);
-        initializeComputers(connection, initialAddress);
-        testComputers(connection);
+        initializeComputers(database.computers);
+
+        testComputers(database.computers);
+
+        List<Computer> activeComputers = database.computers.getActiveComputers();
+        for (Computer computer : activeComputers) System.out.println(computer);
+
+
     }
 
-    private static void improperUsage() {
-        System.out.println("Usage: java DBInitializer pathToDBFile [initialConnection]");
-        System.out.println("\tPath to file is a String that defines the file path that the SQLite DB to initialize");
-        System.out.println("\tinitialConnection is an optional field that takes in a " +
-                "hostname or IP Address to the first computer to harvest the /etc/hosts file form.");
-        System.exit(1);
-    }
+    private static void testComputers(ComputersDAO computersDAO) throws SQLException {
+        // set up multi-threadedness
+        int logicalProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(logicalProcessors * 3);
 
-    public static void testComputers(Connection connection) throws SQLException, JSchException, IOException {
-        Statement statement = connection.createStatement();
-        ResultSet computers = statement.executeQuery("SELECT * FROM Computer WHERE is_active = \'\'");
+        List<Computer> computers = computersDAO.getAllComputers();
 
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE Computer SET is_active=? WHERE ip_address=?");
-        while (computers.next()) {
+        for (Computer computer : computers) {
+            ComputerTester tester = new ComputerTester(computer.hostname, computersDAO);
+            executor.execute(tester);
+        }
 
-            String hostname = computers.getString("hostname");
-            String ip_address = computers.getString("ip_address");
-            String is_active = computers.getString("is_active");
-
-            if (is_active != null && !is_active.equals("")) continue;
-
-            preparedStatement.setString(2, ip_address);
-
-            try {
-                JSch jsch = new JSch();
-                Session session = jsch.getSession(Credentials.USERNAME, hostname);
-                session.setPassword(Credentials.PASSWORD);
-                session.setConfig("StrictHostKeyChecking", "no");
-                session.setTimeout(5000);
-                session.connect();
-                session.disconnect();
-                System.out.println("Connected to " + hostname + " at " + ip_address);
-                preparedStatement.setString(1, "true");
-            } catch (JSchException e) {
-                System.out.println("Failed with " + hostname + " at " + ip_address);
-                //e.printStackTrace();
-                preparedStatement.setString(1, "false");
-            }
-
-            preparedStatement.execute();
+        try {
+            executor.shutdown();
+            executor.awaitTermination(99999, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    public static void initializeComputers(Connection connection) throws JSchException, SQLException, IOException {
-        initializeComputers(connection, "csil.cs.ucsb.edu");
+    public static void initializeComputers(ComputersDAO computersDAO) throws JSchException, SQLException, IOException {
+        initializeComputers(computersDAO, "csil.cs.ucsb.edu");
+        initializeComputers(computersDAO, "linux01.engr.ucsb.edu");
     }
 
-    public static void initializeComputers(Connection connection, String address) throws SQLException, JSchException, IOException {
-        Statement statement = connection.createStatement();
-        statement.setQueryTimeout(30);
-
-        statement.executeUpdate("DROP TABLE IF EXISTS Computer");
-        statement.executeUpdate("DROP TABLE IF EXISTS Usage");
-        statement.executeUpdate("CREATE TABLE Computer (id INTEGER PRIMARY KEY, hostname string, ip_address string, is_active string)");
-        statement.executeUpdate("CREATE TABLE Usage(id INTEGER, computer integer, timestamp integer, PRIMARY KEY (id), FOREIGN KEY (computer) REFERENCES Computer(id))");
-
-
+    public static void initializeComputers(ComputersDAO computersDAO, String address) throws SQLException, JSchException, IOException {
         JSch jsch = new JSch();
         Session session = jsch.getSession(Credentials.USERNAME, address);
         session.setPassword(Credentials.PASSWORD);
@@ -95,29 +76,27 @@ public class DBInitializer {
 
         channel.connect();
 
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO Computer (hostname, ip_address, is_active) VALUES (?, ?, \'\')");
-        boolean isAutoCommit = connection.getAutoCommit();
-        connection.setAutoCommit(false);
-
+        Collection<Computer> computers = new ArrayList<Computer>();
         String line;
         while ((line = reader.readLine()) != null) {
-
             String[] lines = line.split("\n");
             for (String resultRow : lines) {
-                if (resultRow.startsWith("128.111.43") && !resultRow.contains(" ")) {
+                if ((resultRow.startsWith("128.111.43") || resultRow.contains("linux"))&& !resultRow.contains(" ")) {
                     String[] parts = resultRow.split("\t");
                     String ip_address = parts[0];
                     String hostname = parts[1];
-                    preparedStatement.setString(1, hostname);
-                    preparedStatement.setString(2, ip_address);
-                    preparedStatement.execute();
+
+                    Computer computer = new Computer();
+                    computer.hostname = hostname;
+                    computer.ipAddress = ip_address;
+                    computers.add(computer);
 
                     System.out.println(ip_address);
                 }
             }
         }
-        connection.commit();
-        connection.setAutoCommit(isAutoCommit);
+
+        computersDAO.addComputers(computers);
 
         System.out.println("Done Writing.");
 
