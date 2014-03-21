@@ -63,7 +63,9 @@
 
   <target name="clean" description="delete unnecessary files and directories">
     <delete dir="build" failonerror="false" verbose="true" />
-    <mkdir dir="build" />
+    <delete failonerror="false" verbose="true" >
+      <fileset dir="." includes="*.db" />
+    </delete>
   </target>
 
 
