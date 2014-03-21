@@ -23,14 +23,12 @@
   <target name="topper" depends="compile" description="runs the class Topper" >
     <java classname="${packageName}.Topper">
       <classpath refid="project.class.path" />
-        <arg value="./csil.db" />
     </java>
   </target>
 
 
   <target name="init" depends="compile" description="initializes the DB" >
     <java classname="${packageName}.DBInitializer" >
-        <arg value="./csil.db" />
         <classpath refid="project.class.path" />
     </java>
   </target>
@@ -52,6 +50,13 @@
 
     </junit>
   </target>
+
+  <target name="loadavg" depends="compile" description="runs the class LoadAvg" >
+    <java classname="${packageName}.LoadAvg">
+      <classpath refid="project.class.path" />
+    </java>
+  </target>
+
 
   <target name="clean" description="delete unnecessary files and directories">
     <delete dir="build" failonerror="false" verbose="true" />

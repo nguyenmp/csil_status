@@ -60,7 +60,13 @@ public class DBInitializer {
 
     public static void initializeComputers(ComputersDAO computersDAO) throws JSchException, SQLException, IOException {
         initializeComputers(computersDAO, "csil.cs.ucsb.edu");
-        initializeComputers(computersDAO, "linux01.engr.ucsb.edu");
+		try {
+			initializeComputers(computersDAO, "linux01.engr.ucsb.edu");
+		} catch (JSchException ex) {
+			// If you can establish an SSH connection, but can't actually log
+			// on, catch this error.  For example, having a default shell not
+			// installed on the ECI CentOS machines (such as Zsh).
+		}
     }
 
     public static void initializeComputers(ComputersDAO computersDAO, String address) throws SQLException, JSchException, IOException {
