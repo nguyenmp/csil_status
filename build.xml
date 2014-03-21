@@ -24,6 +24,7 @@
   <target name="run" depends="compile" description="runs the class ${mainClass}" >
     <java classname="${mainClass}">
       <classpath refid="project.class.path" />
+        <arg value="./csil.db" />
     </java>
   </target>
 
