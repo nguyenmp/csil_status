@@ -3,6 +3,7 @@
   <property environment="env"/> <!-- load the environment variables -->
   <property name="projectName" value="csil_status" />
   <property name="packageName" value="com.nguyenmp.csil" />
+  <property name="javadocDest" value="javadoc"/>
   <path id="project.class.path">
     <pathelement location="build"/>
     <pathelement location="libs/jsch-0.1.50.jar"/>
@@ -60,9 +61,20 @@
 
   <target name="clean" description="delete unnecessary files and directories">
     <delete dir="build" failonerror="false" verbose="true" />
+    <delete dir="javadoc" failonerror="false" verbose="true" />
     <delete failonerror="false" verbose="true" >
       <fileset dir="." includes="*.db" />
     </delete>
+  </target>
+
+  <target name="javadoc" depends="compile" description="generate Javadoc documentation">
+    <delete dir="javadoc" quiet="true" />
+    <javadoc destdir="javadoc" author="true" version="true" use="true" >
+      <classpath>
+        <fileset dir="libs"/>
+      </classpath>
+      <fileset dir="src" includes="**/*.java"/>
+    </javadoc>
   </target>
 
 
