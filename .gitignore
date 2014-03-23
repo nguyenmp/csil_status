@@ -15,6 +15,7 @@
 out/
 build/
 .idea/
+javadoc/
 
 !libs/*.jar
 src/com/nguyenmp/csil/Credentials.java
