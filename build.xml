@@ -53,7 +53,7 @@
   </target>
 
   <target name="loadavg" depends="compile" description="runs the class LoadAvg" >
-    <java classname="${packageName}.LoadAvg">
+    <java classname="${packageName}.LoadAvgRunner">
       <classpath refid="project.class.path" />
     </java>
   </target>
