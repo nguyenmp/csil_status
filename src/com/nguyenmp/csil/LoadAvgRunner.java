@@ -8,6 +8,7 @@ import com.nguyenmp.csil.things.LoadAvg;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,7 +71,7 @@ public class LoadAvgRunner extends CommandExecutor {
 		}
 
 		// Sort the results from the various LoadAverageRunners and print them
-		Collections.sort(results);
+		Collections.sort(results, loadAvgComparator);
 		// Fancy table heading
 		System.out.println("System Load Averages:");
 		System.out.println("Hostname    1       5       15");
@@ -80,4 +81,26 @@ public class LoadAvgRunner extends CommandExecutor {
 			System.out.print(a.toString());
 		}
 	}
+
+	// Comparison logic used to sort individual LoadAvg objects by system load
+	static Comparator<LoadAvg> loadAvgComparator = new Comparator<LoadAvg>() {
+		public int compare(LoadAvg avg1, LoadAvg avg2) {
+			// Kind of arbitrary ranking measure that takes 5 minute load into account
+			// slightly more so than the 1 and 15 minute averages.
+			// If you're reading this, feel free to tweak this algorithm or replace
+			// it entirely with something better
+			double load1 = 0.3 * avg1.avg1min + 0.4 * avg1.avg5min + 0.3 * avg1.avg15min;
+			double load2 = 0.3 * avg2.avg1min + 0.4 * avg2.avg5min + 0.3 * avg2.avg15min;
+			if (load2 < load1) {
+				// Other system load is lower (more desirable) so ours is "greater than", and
+				// will be placed further along in the collection
+				return 1;
+			} else if (load2 > load1) {
+				// Other system load is higher (less desirable) so ours is "less than", and
+				// will be placed closer to the beginning of the collection
+				return -1;
+			}
+			else return 0;
+		}
+	};
 }

@@ -5,7 +5,7 @@ package com.nguyenmp.csil.things;
  * This allows a LoadAvgRunner to easily sort computers by load average
  * and display the most available machines toward the top of the list.
  */
-public class LoadAvg implements Comparable<LoadAvg> {
+public class LoadAvg {
 	public String hostname;
 	public double avg1min, avg5min, avg15min;
 
@@ -29,23 +29,5 @@ public class LoadAvg implements Comparable<LoadAvg> {
 	@Override
 	public int hashCode() {
 		return hostname.hashCode();
-	}
-
-	@Override
-	public int compareTo(LoadAvg other) {
-		// Kind of arbitrary ranking measure that takes 5 minute load into account
-		// slightly more so than the 1 and 15 minute averages
-		double weightedLoad = 0.3 * avg1min + 0.4 * avg5min + 0.3 * avg15min;
-		double otherLoad = 0.3 * other.avg1min + 0.4 * other.avg5min + 0.3 * other.avg15min;
-		if (otherLoad < weightedLoad) {
-			// Other system load is lower (more desirable) so ours is "greater than", and
-			// will be placed further along in the collection
-			return 1;
-		} else if (otherLoad > weightedLoad) {
-			// Other system load is higher (less desirable) so ours is "less than", and
-			// will be placed closer to the beginning of the collection
-			return -1;
-		}
-		else return 0;
 	}
 }
