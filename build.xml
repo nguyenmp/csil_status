@@ -28,13 +28,6 @@
   </target>
 
 
-  <target name="who" depends="compile" description="runs the class WhoIsHere" >
-    <java classname="${packageName}.WhoIsHere">
-      <classpath refid="project.class.path" />
-    </java>
-  </target>
-
-
   <target name="init" depends="compile" description="initializes the DB" >
     <java classname="${packageName}.DBInitializer" >
         <classpath refid="project.class.path" />
