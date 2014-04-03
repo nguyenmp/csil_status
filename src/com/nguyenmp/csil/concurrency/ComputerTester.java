@@ -35,6 +35,7 @@ public class ComputerTester extends CommandExecutor {
 
     @Override
     public void onError(Exception e) {
+        e.printStackTrace();
         setActive(false);
     }
 
