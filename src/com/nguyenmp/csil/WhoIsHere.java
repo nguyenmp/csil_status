@@ -14,21 +14,30 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class WhoIsHere {
-    private static final Map<String, List<User>> map = new HashMap<>();
+    private static final Map<String, List<User>> map = new HashMap<String, List<User>>();
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, JSchException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException, JSchException, InterruptedException {
         Class.forName("org.sqlite.JDBC");
         final Database database = new Database();
-        List<Computer> activeComputers = database.computers.getActiveComputers();
-        activeComputers.parallelStream().forEach((Computer computer) -> {
-            new TopRunner(computer.hostname, map).run();
-        });
 
-        map.forEach((String hostname, List<User> users) -> System.out.printf("%s\t=>\t%s\n", hostname, users.toString()));
+        int processors = Runtime.getRuntime().availableProcessors();
+        ExecutorService executor = Executors.newFixedThreadPool(processors * 3);
+
+        List<Computer> activeComputers = database.computers.getActiveComputers();
+
+        for (Computer computer : activeComputers) {
+            Runnable tester = new TopRunner(computer.hostname, map);
+            executor.execute(tester);
+        }
+
+        executor.shutdown();
+        executor.awaitTermination(9999, TimeUnit.DAYS);
+
+        for (String hostname : map.keySet()) {
+            System.out.printf("%s\t\t%s\n", hostname, map.get(hostname).toString());
+        }
     }
 
     private static class TopRunner extends CommandExecutor {
@@ -49,7 +58,7 @@ public class WhoIsHere {
 
         @Override
         public void onError(Exception e) {
-            e.printStackTrace();
+            // Do Nothing
         }
     }
 }

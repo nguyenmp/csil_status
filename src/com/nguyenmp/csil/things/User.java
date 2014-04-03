@@ -17,7 +17,6 @@ public class User {
         List<User> users = new ArrayList<User>();
 
         try {
-
             Pattern pattern = Pattern.compile("[^\\s]+");
             Matcher matcher = pattern.matcher(consoleOutput);
             while (matcher.find()) {
@@ -53,7 +52,7 @@ public class User {
                 users.add(user);
             }
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            // Do nothing
         }
         return users;
     }
