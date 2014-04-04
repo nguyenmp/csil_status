@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
  * authentication error or a networking error).
  */
 public abstract class CommandExecutor implements Runnable {
-    private final String hostname, command;
+    private final String username, password, hostname, command;
 
     /**
      * <p>Creates a new {@link com.nguyenmp.csil.concurrency.CommandExecutor} that
@@ -40,7 +40,9 @@ public abstract class CommandExecutor implements Runnable {
      * @param hostname the hostname of the computer to connect to
      * @param command the command to run or null to just connect and disconnect
      */
-    public CommandExecutor(String hostname, String command) {
+    public CommandExecutor(String username, String password, String hostname, String command) {
+        this.username = username;
+        this.password = password;
         this.hostname = hostname;
         this.command = command;
     }
@@ -48,45 +50,49 @@ public abstract class CommandExecutor implements Runnable {
     @Override
     public void run() {
         try {
-            // Initialization of the JSch connection
-            JSch jsch = new JSch();
-            Session session = jsch.getSession(Credentials.USERNAME, hostname);
-            session.setPassword(Credentials.PASSWORD);
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.setTimeout(5000);
-            session.connect();
-
-            // If the command is specified, execute it
-            String result = null;
-            if (command != null) {
-
-                // Execute command
-                ChannelExec channel = (ChannelExec) session.openChannel("exec");
-                channel.setCommand(command);
-                channel.connect();
-
-                // Read result
-                BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
-                StringBuilder builder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    builder.append(line).append('\n');
-                }
-
-                // Set result to be the read output
-                result = builder.toString();
-            }
-
-            // Clean up!
-            session.disconnect();
-
-            // Trigger callback
+            String result = performBlockingExecution(username, password, hostname, command);
             onSuccess(result);
         } catch (JSchException e) {
             onError(e);
         } catch (IOException e) {
             onError(e);
         }
+    }
+
+    public static String performBlockingExecution(String username, String password, String hostname, String command) throws JSchException, IOException {
+        // Initialization of the JSch connection
+        JSch jsch = new JSch();
+        Session session = jsch.getSession(username, hostname);
+        session.setPassword(password);
+        session.setConfig("StrictHostKeyChecking", "no");
+        session.setTimeout(5000);
+        session.connect();
+
+        // If the command is specified, execute it
+        String result = null;
+        if (command != null) {
+
+            // Execute command
+            ChannelExec channel = (ChannelExec) session.openChannel("exec");
+            channel.setCommand(command);
+            channel.connect();
+
+            // Read result
+            BufferedReader reader = new BufferedReader(new InputStreamReader(channel.getInputStream()));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line).append('\n');
+            }
+
+            // Set result to be the read output
+            result = builder.toString();
+        }
+
+        // Clean up!
+        session.disconnect();
+
+        return result;
     }
 
     /**

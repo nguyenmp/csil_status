@@ -1,6 +1,7 @@
 package com.nguyenmp.csil.concurrency;
 
 
+import com.nguyenmp.csil.Credentials;
 import com.nguyenmp.csil.daos.ComputersDAO;
 
 import java.sql.SQLException;
@@ -23,7 +24,7 @@ public class ComputerTester extends CommandExecutor {
      * @param computersDAO the ComputersDAO of the database to update on success/failure
      */
     public ComputerTester(String hostname, ComputersDAO computersDAO) {
-        super(hostname, null);
+        super(Credentials.username(), Credentials.password(), hostname, null);
         this.computersDAO = computersDAO;
         this.hostname = hostname;
     }

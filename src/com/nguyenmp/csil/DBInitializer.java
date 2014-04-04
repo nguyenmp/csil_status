@@ -71,8 +71,8 @@ public class DBInitializer {
 
     public static void initializeComputers(ComputersDAO computersDAO, String address) throws SQLException, JSchException, IOException {
         JSch jsch = new JSch();
-        Session session = jsch.getSession(Credentials.USERNAME, address);
-        session.setPassword(Credentials.PASSWORD);
+        Session session = jsch.getSession(Credentials.username(), address);
+        session.setPassword(Credentials.password());
         session.setConfig("StrictHostKeyChecking", "no");
         session.connect();
         ChannelExec channel = (ChannelExec) session.openChannel("exec");

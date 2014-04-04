@@ -26,7 +26,7 @@ public class LoadAvgRunner extends CommandExecutor {
 	public static List<LoadAvg> results ;
 
 	public LoadAvgRunner(String hostname) {
-		super(hostname, COMMAND);
+		super(Credentials.username(), Credentials.password(), hostname, COMMAND);
 		this.hostname = hostname;
 
 	}

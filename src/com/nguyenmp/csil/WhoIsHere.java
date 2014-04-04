@@ -7,6 +7,7 @@ import com.nguyenmp.csil.things.Computer;
 import com.nguyenmp.csil.things.User;
 
 import java.io.IOException;
+import java.security.cert.CRLException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +37,7 @@ public class WhoIsHere {
         executor.awaitTermination(9999, TimeUnit.DAYS);
 
         for (String hostname : map.keySet()) {
-            System.out.printf("%s\t\t%s\n", hostname, map.get(hostname).toString());
+            System.out.printf("%s\n%s\n", hostname, map.get(hostname).toString());
         }
     }
 
@@ -45,7 +46,7 @@ public class WhoIsHere {
         private final Map<String, List<User>> map;
 
         TopRunner(String hostname, Map<String, List<User>> map) {
-            super(hostname, "who -u");
+            super(Credentials.username(), Credentials.password(), hostname, "who -u");
             this.hostname = hostname;
             this.map = map;
         }
