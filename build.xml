@@ -88,7 +88,13 @@
 
   <target name="rebuild" depends="clean, compile"/>
 
-  <target name="dist" depends="rebuild" description="generates the jar file for distribution">
+  <target name="dist" depends="rebuild, javadoc" description="generates the jar file for distribution">
+    <jar jarfile="dist/csil-status-${version}-javadocs.jar">
+      <fileset dir="javadoc" />
+    </jar>
+    <jar jarfile="dist/csil-status-${version}-sources.jar">
+      <fileset dir="src" />
+    </jar>
     <jar jarfile="dist/csil-status-${version}.jar">
       <fileset dir="build" />
       <archives>
