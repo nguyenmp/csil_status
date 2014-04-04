@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * users decide which machine to use
  */
 public class LoadAvgRunner extends CommandExecutor {
-	public static final String COMMAND = "cat /proc/loadavg";
+	public static final String COMMAND = "echo -n \"$(($(cat /proc/stat | grep \"^cpu.*\" | wc -l) - 1)) \"; cat /proc/loadavg";
 	public final String hostname;
 	public static List<LoadAvg> results ;
 
@@ -34,11 +34,12 @@ public class LoadAvgRunner extends CommandExecutor {
 	public void onSuccess(String result) {
 		// Parse the line to get load averages only
 		String[] avgs = result.split("\\s+");
-		double avg0 = Double.parseDouble(avgs[0]);
-		double avg1 = Double.parseDouble(avgs[1]);
-		double avg2 = Double.parseDouble(avgs[2]);
+		int cpus = Integer.parseInt(avgs[0]);
+		double avg0 = Double.parseDouble(avgs[1]);
+		double avg1 = Double.parseDouble(avgs[2]);
+		double avg2 = Double.parseDouble(avgs[3]);
 		// Create new LoadAvg with hostname prefix only (such as linux14, optimus, etc.) and load averages
-		LoadAvg avg = new LoadAvg(hostname.split("\\.")[0], avg0, avg1, avg2);
+		LoadAvg avg = new LoadAvg(hostname.split("\\.")[0], 100 * avg0/cpus, 100 * avg1/cpus, 100 * avg2/cpus);
 		results.add(avg);
 	}
 
@@ -47,9 +48,7 @@ public class LoadAvgRunner extends CommandExecutor {
 		System.err.println("Error: could not connect to " + hostname);
 	}
 
-	public static void main(String[] args) throws SQLException, ClassNotFoundException {
-		System.out.println("Connecting to remote machines...");
-		// Create a thread safe ArrayList
+	public static List<LoadAvg> getLoadAverages() throws SQLException, ClassNotFoundException {
 		results = Collections.synchronizedList(new ArrayList<LoadAvg>());
 		Database db = new Database();
 		List<Computer> computerList = db.computers.getActiveComputers();
@@ -72,10 +71,16 @@ public class LoadAvgRunner extends CommandExecutor {
 
 		// Sort the results from the various LoadAverageRunners and print them
 		Collections.sort(results, loadAvgComparator);
+		return results;
+	}
+
+	public static void main(String[] args) throws SQLException, ClassNotFoundException {
+		LoadAvgRunner.getLoadAverages();
+		// Sort the results from the various LoadAverageRunners and print them
 		// Fancy table heading
 		System.out.println("System Load Averages:");
-		System.out.println("Hostname    1       5       15");
-		System.out.println("--------------------------------");
+		System.out.println("Hostname        1       5       15");
+		System.out.println("----------------------------------");
 		// Print results
 		for (LoadAvg a: results) {
 			System.out.print(a.toString());
