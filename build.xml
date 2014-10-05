@@ -7,6 +7,7 @@
   <property name="version" value="0.0.1"/>
   <path id="project.class.path">
     <pathelement location="build"/>
+    <pathelement location="libs/junit-4.11.jar"/>
     <pathelement location="libs/jsch-0.1.50.jar"/>
     <pathelement location="libs/sqlite-jdbc-3.7.15-M1.jar"/>
   </path>
@@ -90,13 +91,19 @@
 
   <target name="dist" depends="rebuild, javadoc" description="generates the jar file for distribution">
     <jar jarfile="dist/csil-status-${version}-javadocs.jar">
-      <fileset dir="javadoc" />
+      <fileset dir="javadoc" >
+        <exclude name="**/Credentials.html"/>
+      </fileset>
     </jar>
     <jar jarfile="dist/csil-status-${version}-sources.jar">
-      <fileset dir="src" />
+      <fileset dir="src" >
+        <exclude name="**/Credentials.java"/>
+      </fileset>
     </jar>
     <jar jarfile="dist/csil-status-${version}.jar">
-      <fileset dir="build" />
+      <fileset dir="build" >
+        <exclude name="**/Credentials.class"/>
+      </fileset>
       <archives>
         <zips>
           <fileset dir="libs" />

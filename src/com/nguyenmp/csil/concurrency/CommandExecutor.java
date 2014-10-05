@@ -65,7 +65,8 @@ public abstract class CommandExecutor implements Runnable {
         Session session = jsch.getSession(username, hostname);
         session.setPassword(password);
         session.setConfig("StrictHostKeyChecking", "no");
-        session.setTimeout(5000);
+        session.setTimeout(10000);
+        session.setServerAliveInterval(10000);
         session.connect();
 
         // If the command is specified, execute it
