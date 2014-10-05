@@ -13,17 +13,17 @@ public class LoadAvg {
 		this("", 0.0, 0.0, 0.0);
 	}
 
-	public LoadAvg(String hostname, double avg5min, double avg1min, double avg15min) {
+	public LoadAvg(String hostname, double avg1min, double avg5min, double avg15min) {
 		this.hostname = hostname;
-		this.avg5min = avg5min;
 		this.avg1min = avg1min;
+		this.avg5min = avg5min;
 		this.avg15min = avg15min;
 	}
 
 
 	@Override
 	public String toString() {
-		return String.format("%-10s: %-6s  %-6s  %-6s\n", hostname, avg1min, avg5min, avg15min);
+		return String.format("%-10s: %6.2f  %6.2f  %6.2f\n", hostname, avg1min, avg5min, avg15min);
 	}
 
 	@Override
