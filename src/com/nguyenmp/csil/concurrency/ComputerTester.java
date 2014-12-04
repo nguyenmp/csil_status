@@ -24,7 +24,7 @@ public class ComputerTester extends CommandExecutor {
      * @param computersDAO the ComputersDAO of the database to update on success/failure
      */
     public ComputerTester(String hostname, ComputersDAO computersDAO) {
-        super(Credentials.username(), Credentials.password(), hostname, null);
+        super(Credentials.username(), Credentials.password(), hostname, "tmux new -s foo -d && tmux send-keys -t foo 'java -jar ~/monitor/target/monitor-0.0-SNAPSHOT.jar' C-m");
         this.computersDAO = computersDAO;
         this.hostname = hostname;
     }
