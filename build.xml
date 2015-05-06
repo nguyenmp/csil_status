@@ -67,6 +67,12 @@
     </java>
   </target>
 
+  <target name="uptime" depends="compile" description="runs the class Uptime" >
+    <java classname="${packageName}.UptimeRunner">
+      <classpath refid="project.class.path" />
+    </java>
+  </target>
+
 
   <target name="clean" description="delete unnecessary files and directories">
     <delete dir="build" failonerror="false" verbose="true" />
